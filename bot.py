@@ -25,8 +25,7 @@ def get_promt(message):
                                   UHD(Детально)
                                   DEFAULT(По умолчанию)
                                 ''')
-    bot.register_next_step_handler(style_question, photo_style, promt) 
-
+    bot.register_next_step_handler(style_question, photo_style, promt)
 def photo_style(message, promt):  
     user_style = message.text.upper()  
     if user_style not in ['ANIME', 'KANDINSKY', 'UHD', 'DEFAULT']:
@@ -34,11 +33,12 @@ def photo_style(message, promt):
         return
     
     photo_generation(message, promt, user_style)
-
+    
 def photo_generation(message, promt, user_style):  
-    bot.send_message(message.chat.id, 'Генерирую...')
+    bot_send_generation = bot.send_message(message.chat.id, 'Генерирую...')
     
     try:
+        bot.send_chat_action(message.chat.id, 'typing')
         api = Text2ImageAPI('https://api-key.fusionbrain.ai/', api_token, secret_key)
         model_id = api.get_model()
         uuid = api.generate(prompt=promt, model=model_id, style=user_style)
@@ -56,6 +56,7 @@ def photo_generation(message, promt, user_style):
             
         with open(f"img/{file_name}", "rb") as file:
             bot.send_photo(message.chat.id, file)
+        bot.delete_message(message.chat.id, bot_send_generation.message_id )
             
     except Exception as e:
         bot.send_message(message.chat.id, f"Произошла ошибка: {str(e)}")
